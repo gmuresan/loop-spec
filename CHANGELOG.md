@@ -2,6 +2,18 @@
 
 All notable changes documented here. Format follows Keep a Changelog.
 
+## [8.2.2] - 2026-10-28
+
+### Changed
+
+- In a workspace run each repository's base is `--base`, else its own
+  `.loop-spec/config.json` `base`, else the workspace's, else its default branch.
+
+### Fixed
+
+- `git.dirty()` keeps the first path whole when the first status line starts with a
+  space, so `rootChanges` and the dirty-checkout messages name the right file.
+
 ## [8.2.1] - 2026-10-20
 
 ### Changed
