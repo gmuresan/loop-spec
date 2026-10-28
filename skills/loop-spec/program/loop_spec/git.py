@@ -151,8 +151,11 @@ def detached(worktree: Path) -> bool:
 
 
 def dirty(worktree: Path) -> list[str]:
-    out = run_git(worktree, "status", "--porcelain")
-    return [line[3:] for line in out.splitlines() if line]
+    # Not run_git: its strip() would eat the leading space of the first line (" M path").
+    proc = git(worktree, "status", "--porcelain")
+    if proc.returncode != 0:
+        raise LoopSpecError(f"git status failed: {proc.stderr.strip()}", f"run it by hand in {worktree} to see why")
+    return [line[3:] for line in proc.stdout.splitlines() if line]
 
 
 def require_clean(worktree: Path, what: str, repair: str) -> None:
