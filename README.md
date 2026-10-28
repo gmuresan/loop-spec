@@ -4,7 +4,7 @@ For a developer installing loop-spec in Claude Code, or running it as the method
 autonomous coding agent follows on the Claude Agent SDK. Use this guide to install
 it, start a run, and read the result.
 
-Current version: 8.2.1
+Current version: 8.2.2
 
 ## What it is
 
@@ -144,8 +144,9 @@ spans, so a host only has to put the clones there.
 Inside it every run is a workspace run, including one started from a listed clone.
 
 - The run keeps one worktree per repository: `work/<name>/` and `verify/<name>/`.
-- `--base`, `--branch`, and the workspace's own `.loop-spec/config.json` apply to every
-  repository; without a base, each repository uses its default branch. `loop-spec set
+- `--base`, `--branch`, and the workspace's `.loop-spec/config.json` apply to every
+  repository, but a repository's own .loop-spec/config.json base comes before the
+  workspace's; without any base, a repository uses its default branch. `loop-spec set
   --repo NAME --branch ... --title ...` gives one repository its own branch and PR title.
 - A revise run (`--pr`) works on one repository's PR. Pass the PR's URL when its number
   could belong to more than one repository.
@@ -158,7 +159,7 @@ Optional, in `<repo>/.loop-spec/config.json` (commit it if your team wants it sh
 
 | Key | Effect |
 |---|---|
-| `base` | the branch runs start from and PRs target; default origin's default branch |
+| `base` | the branch runs start from and PRs target; default origin's default branch. In a workspace run a repository's own config `base` comes before the workspace's |
 | `branch` | the feature branch name, for repositories with a naming rule; `-2`, `-3` is added when taken |
 | `branchPrefix` | prefix for the default branch name; default `feat/`, `fix/` for debug |
 | `reviewers`, `labels` | set on a new PR |
