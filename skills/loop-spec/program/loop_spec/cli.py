@@ -110,7 +110,7 @@ def _start_workspace(args, run: Run, project: Path, entries: list[dict], config:
         prefix = config.get("branchPrefix") or ("fix/" if kind == "debug" else "feat/")
         picks = []
         for e in entries:  # resolve everything first, so a failure leaves no worktree behind
-            base_branch = args.base or config.get("base") or git.default_branch(e["path"])
+            base_branch = args.base or _config(e["path"]).get("base") or config.get("base") or git.default_branch(e["path"])
             branch = first_free(args.branch or config.get("branch") or prefix + run.slug,
                                 lambda b, path=e["path"]: git.exists_anywhere(path, b))
             picks.append((e, base_branch, git.resolve_base(e["path"], base_branch), branch, None))
