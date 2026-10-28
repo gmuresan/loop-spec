@@ -324,6 +324,36 @@ class WorkspaceTests(unittest.TestCase):
             self.assertEqual(len(sh(clone, "git", "worktree", "list").splitlines()), 1)
         self.assertFalse(Path(run["work"]).exists())
 
+    def branch_bases(self, own: dict, workspace: dict | None, *extra: str) -> dict:
+        """Start a run with `release` and `develop` on both repositories, `own` configs written per repository."""
+        for clone in self.clones.values():
+            for branch in ("release", "develop"):
+                sh(clone, "git", "push", "-q", "origin", f"main:refs/heads/{branch}")
+        for name, config in own.items():
+            (self.clones[name] / ".loop-spec").mkdir(exist_ok=True)
+            (self.clones[name] / ".loop-spec" / "config.json").write_text(json.dumps(config))
+        if workspace:
+            (self.root / ".loop-spec" / "config.json").write_text(json.dumps(workspace))
+        run = self.start(*extra)
+        repos = json.loads(Path(run["runDir"], "state.json").read_text())["repos"]
+        return {name: repo["base"]["branch"] for name, repo in repos.items()}
+
+    def test_11_per_repository_base_beats_workspace_config_and_default(self):
+        bases = self.branch_bases({"api": {"base": "release"}}, {"base": "develop"})
+        self.assertEqual(bases["api"], "release")
+
+    def test_11_per_repository_base_without_workspace_config_leaves_the_others_on_default(self):
+        bases = self.branch_bases({"api": {"base": "release"}}, None)
+        self.assertEqual(bases, {"api": "release", "web": "main"})
+
+    def test_11_per_repository_base_is_overridden_by_the_base_flag(self):
+        bases = self.branch_bases({"api": {"base": "release"}}, {"base": "develop"}, "--base", "main")
+        self.assertEqual(bases, {"api": "main", "web": "main"})
+
+    def test_11_workspace_config_base_applies_to_a_repository_without_its_own(self):
+        bases = self.branch_bases({"api": {"base": "release"}}, {"base": "develop"})
+        self.assertEqual(bases["web"], "develop")
+
 
 if __name__ == "__main__":
     unittest.main()
